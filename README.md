@@ -14,7 +14,7 @@ The project was built to enable data stewards and scientists to share HL7v2 samp
 
 1. Download the latest release to a location of your choice.
 2. Unzip it.
-3. Run the application and enter the path to your v2 messages. Make sure to back them up prior as this application will overwrite the original messages.
+3. Run the application and enter the path to your v2 messages. Make sure to back them up prior to runing the application since the original messages will be overwritten.
 
 This application will use the `appsettings.json` to read the values that are to be replaced for each segments and their corresponding subsegments. 
 
