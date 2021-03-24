@@ -6,7 +6,7 @@ This console application allows you to anonymize HL7v2 messages.
 
 ## Motivation
 
-The project was build to enable data stewards and scientists to share HL7v2 sample messages without identifiable data. 
+The project was built to enable data stewards and scientists to share HL7v2 sample messages without identifiable data. 
 
 ## How to use?
 
