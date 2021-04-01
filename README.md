@@ -2,11 +2,11 @@
 
 # Healex.HL7v2Anonymizer
 
-This console application allows you to anonymize HL7v2 messages. 
+This console application allows you to anonymize HL7v2 messages. The standard configuration anonymizes all identifiable data in HL7 v2 messages and hashes fields that include an ID.
 
 ## Motivation
 
-The project was built to enable data stewards and scientists to share HL7v2 sample messages without identifiable data. 
+The project was built to enable anyone to share HL7v2 sample messages without identifiable data. 
 
 ## How to use?
 
@@ -15,6 +15,8 @@ The project was built to enable data stewards and scientists to share HL7v2 samp
 1. Download the latest release to a location of your choice.
 2. Unzip it.
 3. Run the application and enter the path to your v2 messages. Make sure to back them up prior to runing the application since the original messages will be overwritten.
+
+## Configuration
 
 This application will use the `appsettings.json` to read the values that are to be replaced for each segments and their corresponding subsegments. 
 
@@ -30,6 +32,22 @@ Say for instance, you want to replace the value that is currently assigned for t
             {
                 "Path": "NK1.2.2",
                 "Value": "Given name" <---- replace this value
+            },
+            // omitted
+        ]
+    }
+```
+
+Use the "HASH" keyword to generate persistent, pseudonymized IDs. This function will always generate the same anonymized ID for a given ID in the HL7 v2 message. The hash function is one-way, so there is no way of reversing the pseudonymized ID back to its original ID.
+
+```json
+    {
+        "Segment": "PID",
+        "Replacements": [
+            // ommited
+            {
+                "Path": "PID.1.1",
+                "Value": "HASH" <---- The value in PID.1.1 will be hashed, not overwritten
             },
             // omitted
         ]
