@@ -2,11 +2,11 @@
 using System;
 using static Healex.HL7v2Anonymizer.ReplacementOptions;
 
-namespace Healex.HL7v2Anonymizer
+namespace Healex.HL7v2Anonymizer.Services
 {
     public class Anonymizer
     {
-        private ReplacementOptions _replacementOptions;
+        private readonly ReplacementOptions _replacementOptions;
 
         public Anonymizer(ReplacementOptions replacementOptions)
         {
@@ -23,24 +23,38 @@ namespace Healex.HL7v2Anonymizer
                 {
                     // Create new temporary message for each repeating segment 
                     // because we can't set values in all repeating segments at once
-                    // We use references so this overwrites the original segments
                     var tempMessage = new Message();
                     tempMessage.AddNewSegment(segment);
 
                     foreach (Replacement replacement in segmentReplacement.Replacements)
                     {
-                        tryReplaceValue(replacement, tempMessage);
+                        var replacementValue = GetReplacementValue(replacement, message);
+                        TryReplaceValue(tempMessage, replacement.Path, replacementValue);
                     }
                 }
             }
             return isSuccess;
         }
 
-        private bool tryReplaceValue(Replacement replacement, Message message)
+        private string GetReplacementValue(Replacement replacement, Message message)
+        {
+            if (replacement.Value == "HASH")
+            {
+                var valueToHash = message.GetValue(replacement.Path);
+                var hashedValue = HashGenerator.HashString(valueToHash);
+                return hashedValue;
+            }
+            else
+            {
+                return replacement.Value;
+            }
+        }
+
+        private bool TryReplaceValue(Message message, string path, string replacementValue)
         {
             try
             {
-                message.SetValue(replacement.Path, replacement.Value);
+                message.SetValue(path, replacementValue);
             }
             catch (HL7Exception)
             {
@@ -54,6 +68,4 @@ namespace Healex.HL7v2Anonymizer
             return true;
         }
     }
-
-    
 }
