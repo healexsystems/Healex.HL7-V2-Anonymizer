@@ -1,4 +1,5 @@
-﻿using HL7.Dotnetcore;
+﻿using Healex.HL7v2Anonymizer.Services;
+using HL7.Dotnetcore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -9,10 +10,10 @@ namespace Healex.HL7v2Anonymizer
     {
         static void Main(string[] args)
         {
-            waitForInput();
+            WaitForInput();
         }
 
-        private static void waitForInput()
+        private static void WaitForInput()
         {
             Console.WriteLine("Welcome to the Healex HL7v2 anonymizer!");
             Console.WriteLine("---------------------------------------------------------------------------------------");
@@ -21,15 +22,15 @@ namespace Healex.HL7v2Anonymizer
             Console.WriteLine("Enter the directory to your v2 messages and press enter:");
             var directory = Console.ReadLine();
             Console.WriteLine();
-            tryAnonymizeMessages(directory);
+            TryAnonymizeMessages(directory);
             Console.WriteLine();
-            waitForInput();
+            WaitForInput();
         }
 
-        private static void tryAnonymizeMessages(string directory)
+        private static void TryAnonymizeMessages(string directory)
         {
-            var pathsToV2Messages = getPathsToV2Messages(directory);
-            var anonymizer = new Anonymizer(getReplacementOptions());
+            var pathsToV2Messages = GetPathsToV2Messages(directory);
+            var anonymizer = new Anonymizer(GetReplacementOptions());
 
             if (pathsToV2Messages is not null)
             {
@@ -38,14 +39,14 @@ namespace Healex.HL7v2Anonymizer
 
                 foreach (string path in pathsToV2Messages)
                 {
-                    var message = readAndParseMessage(path);
+                    var message = ReadAndParseMessage(path);
                     var success = anonymizer.Anonymize(message);
-                    serializeAndWriteMessageOrLogError(success, message, path);
+                    SerializeAndWriteMessageOrLogError(success, message, path);
                 }
             }
         }
 
-        private static void serializeAndWriteMessageOrLogError(bool success, Message message, string path)
+        private static void SerializeAndWriteMessageOrLogError(bool success, Message message, string path)
         {
             if (success)
             {
@@ -59,7 +60,7 @@ namespace Healex.HL7v2Anonymizer
             }
         }
 
-        private static string[] getPathsToV2Messages(string directory)
+        private static string[] GetPathsToV2Messages(string directory)
         {
             try
             {
@@ -73,7 +74,7 @@ namespace Healex.HL7v2Anonymizer
             }
         }
 
-        private static Message readAndParseMessage(string path)
+        private static Message ReadAndParseMessage(string path)
         {
             try
             {
@@ -87,7 +88,7 @@ namespace Healex.HL7v2Anonymizer
             }
         }
 
-        private static ReplacementOptions getReplacementOptions()
+        private static ReplacementOptions GetReplacementOptions()
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
