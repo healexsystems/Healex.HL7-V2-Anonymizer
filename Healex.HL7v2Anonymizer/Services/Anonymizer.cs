@@ -29,7 +29,7 @@ namespace Healex.HL7v2Anonymizer.Services
                     foreach (Replacement replacement in segmentReplacement.Replacements)
                     {
                         var replacementValue = GetReplacementValue(replacement, message);
-                        TryReplaceValue(tempMessage, replacement.Path, replacementValue);
+                        isSuccess = TryReplaceValue(tempMessage, replacement.Path, replacementValue);
                     }
                 }
             }
