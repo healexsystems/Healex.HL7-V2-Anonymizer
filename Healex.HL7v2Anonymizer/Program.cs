@@ -40,8 +40,11 @@ namespace Healex.HL7v2Anonymizer
                 foreach (string path in pathsToV2Messages)
                 {
                     var message = ReadAndParseMessage(path);
-                    var success = anonymizer.Anonymize(message);
-                    SerializeAndWriteMessageOrLogError(success, message, path);
+                    if (message is not null)
+                    {
+                        var success = anonymizer.Anonymize(message);
+                        SerializeAndWriteMessageOrLogError(success, message, path);
+                    }
                 }
             }
         }
