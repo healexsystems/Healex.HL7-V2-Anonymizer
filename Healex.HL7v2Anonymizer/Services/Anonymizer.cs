@@ -40,14 +40,17 @@ namespace Healex.HL7v2Anonymizer.Services
         {
             if (replacement.Value == "HASH")
             {
-                var valueToHash = message.GetValue(replacement.Path);
-                var hashedValue = HashGenerator.HashString(valueToHash);
-                return hashedValue;
+                try
+                {
+                    var valueToHash = message.GetValue(replacement.Path);
+                    var hashedValue = HashGenerator.HashString(valueToHash);
+                    return hashedValue;
+                } catch
+                {
+                    // Could not find a value to hash in the HL7 message
+                }
             }
-            else
-            {
-                return replacement.Value;
-            }
+            return replacement.Value;
         }
 
         private bool TryReplaceValue(Message message, string path, string replacementValue)
