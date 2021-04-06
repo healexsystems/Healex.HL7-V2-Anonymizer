@@ -1,3 +1,4 @@
+using Healex.HL7v2Anonymizer.Services;
 using HL7.Dotnetcore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -26,6 +27,7 @@ namespace Healex.HL7v2Anonymizer.Tests
 
         public void TestAnonymization(string messageContent)
         {
+            var originalMessage = new Message(messageContent);
             var message = new Message(messageContent);
 
             // Setup
@@ -43,7 +45,11 @@ namespace Healex.HL7v2Anonymizer.Tests
                 {
                     try
                     {
-                        Assert.AreEqual(message.GetValue(replacement.Path), replacement.Value);
+                        var originalValue = originalMessage.GetValue(replacement.Path);
+                        var newValue = message.GetValue(replacement.Path);
+
+                        Assert.AreNotEqual(originalValue, newValue);
+                        Assert.IsTrue(newValue == replacement.Value || newValue == HashGenerator.HashString(originalValue));
                     }
                     catch (HL7Exception)
                     {
