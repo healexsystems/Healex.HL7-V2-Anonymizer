@@ -45,7 +45,7 @@ namespace Healex.HL7v2Anonymizer.Tests
 
             // Assert
             Assert.IsTrue(originalMessage.SegmentCount == message.SegmentCount);
-            for (int i = 0; i < originalMessage.SegmentCount; i++)
+            for (var i = 0; i < originalMessage.SegmentCount; i++)
             {
                 var originalSegment = originalMessage.Segments().ElementAt(i);
                 var messageSegment = message.Segments().ElementAt(i);

@@ -18,11 +18,11 @@ namespace Healex.HL7v2Anonymizer.Services
         {
             var isSuccess = true;
 
-            for (int segmentIndex = 0; segmentIndex < message.SegmentCount; segmentIndex++)
+            for (var segmentIndex = 0; segmentIndex < message.SegmentCount; segmentIndex++)
             {
                 var segment = message.Segments().ElementAt(segmentIndex);
                 if (_replacementOptions.Segments.FirstOrDefault(segRep => segRep.Segment == segment.Name)
-                    is var segmentReplacement && segmentReplacement != null)
+                    is { } segmentReplacement)
                 {
                     // Create new temporary message for each repeating segment 
                     // because we can't set values in all repeating segments at once
@@ -43,7 +43,7 @@ namespace Healex.HL7v2Anonymizer.Services
             var tempMessage = new Message();
 
             // workaround to ensure the segment gets it absolute (internal) SequenceNo re-assigned in AddNewSegment()
-            for (int i = 0; i < segmentIndex; i++)
+            for (var i = 0; i < segmentIndex; i++)
             {
                 tempMessage.AddNewSegment(new Segment("DummySegment", new HL7Encoding()));
             }
