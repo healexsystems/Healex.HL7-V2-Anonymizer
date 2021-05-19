@@ -61,6 +61,7 @@ namespace Healex.HL7v2Anonymizer.Tests
             // Setup
             var replacementOptions = getReplacementOptions();
             message.ParseMessage();
+            originalMessage.ParseMessage();
 
             // Method under test
             var anonymizer = new Anonymizer(replacementOptions);
@@ -89,6 +90,7 @@ namespace Healex.HL7v2Anonymizer.Tests
 
             // Output for manual inspection
             var messageAsString = message.SerializeMessage(true);
+            var originalMessageAsString = originalMessage.SerializeMessage(true);
             Console.WriteLine(messageAsString);
         }
 
