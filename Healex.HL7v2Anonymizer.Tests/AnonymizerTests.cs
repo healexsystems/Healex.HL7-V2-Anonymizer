@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Linq;
 using static Healex.HL7v2Anonymizer.ReplacementOptions;
 
 namespace Healex.HL7v2Anonymizer.Tests
@@ -25,6 +26,33 @@ namespace Healex.HL7v2Anonymizer.Tests
             TestAnonymization(File.ReadAllText(@"./TestData/TestOru1.hl7"));
         }
 
+        [TestMethod]
+        [DeploymentItem("Healex.HL7v2Anonymizer.Tests/TestData", "TestData")]
+        public void AnonymizerTestAdtSegmentOrderWithAnonymization()
+        {
+            // Setup
+            var messageContent = File.ReadAllText(@"./TestData/TestAdt1.hl7");
+            var originalMessage = new Message(messageContent);
+            var message = new Message(messageContent);
+            
+            message.ParseMessage();
+            originalMessage.ParseMessage();
+
+            // Execute
+            var replacementOptions = getReplacementOptions();
+            var anonymizer = new Anonymizer(replacementOptions);
+            anonymizer.Anonymize(message);
+
+            // Assert
+            Assert.IsTrue(originalMessage.SegmentCount == message.SegmentCount);
+            for (var i = 0; i < originalMessage.SegmentCount; i++)
+            {
+                var originalSegment = originalMessage.Segments().ElementAt(i);
+                var messageSegment = message.Segments().ElementAt(i);
+                Assert.AreEqual(originalSegment.Value, messageSegment.Value, $"Segments {originalSegment.Name} and {messageSegment.Name} at index {i} should be equal.");
+            }
+        }
+
         public void TestAnonymization(string messageContent)
         {
             var originalMessage = new Message(messageContent);
@@ -33,6 +61,7 @@ namespace Healex.HL7v2Anonymizer.Tests
             // Setup
             var replacementOptions = getReplacementOptions();
             message.ParseMessage();
+            originalMessage.ParseMessage();
 
             // Method under test
             var anonymizer = new Anonymizer(replacementOptions);
@@ -61,6 +90,7 @@ namespace Healex.HL7v2Anonymizer.Tests
 
             // Output for manual inspection
             var messageAsString = message.SerializeMessage(true);
+            var originalMessageAsString = originalMessage.SerializeMessage(true);
             Console.WriteLine(messageAsString);
         }
 

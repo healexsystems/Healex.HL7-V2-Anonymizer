@@ -1,5 +1,6 @@
 ﻿using HL7.Dotnetcore;
 using System;
+using System.Linq;
 using static Healex.HL7v2Anonymizer.ReplacementOptions;
 
 namespace Healex.HL7v2Anonymizer.Services
@@ -16,16 +17,16 @@ namespace Healex.HL7v2Anonymizer.Services
         public bool Anonymize(Message message)
         {
             var isSuccess = true;
-            foreach (SegmentReplacement segmentReplacement in _replacementOptions.Segments)
+
+            for (var segmentIndex = 0; segmentIndex < message.SegmentCount; segmentIndex++)
             {
-                var segments = message.Segments(segmentReplacement.Segment);
-                foreach (Segment segment in segments)
+                var segment = message.Segments().ElementAt(segmentIndex);
+                if (_replacementOptions.Segments.FirstOrDefault(segRep => segRep.Segment == segment.Name)
+                    is { } segmentReplacement)
                 {
                     // Create new temporary message for each repeating segment 
                     // because we can't set values in all repeating segments at once
-                    var tempMessage = new Message();
-                    tempMessage.AddNewSegment(segment);
-
+                    var tempMessage = AddSegmentAtIndex(segment, segmentIndex);
                     foreach (Replacement replacement in segmentReplacement.Replacements)
                     {
                         var replacementValue = GetReplacementValue(replacement, message);
@@ -33,7 +34,21 @@ namespace Healex.HL7v2Anonymizer.Services
                     }
                 }
             }
+
             return isSuccess;
+        }
+
+        private Message AddSegmentAtIndex(Segment segment, int segmentIndex)
+        {
+            var tempMessage = new Message();
+
+            // workaround to ensure the segment gets it absolute (internal) SequenceNo re-assigned in AddNewSegment()
+            for (var i = 0; i < segmentIndex; i++)
+            {
+                tempMessage.AddNewSegment(new Segment("DummySegment", new HL7Encoding()));
+            }
+            tempMessage.AddNewSegment(segment);
+            return tempMessage;
         }
 
         private string GetReplacementValue(Replacement replacement, Message message)
