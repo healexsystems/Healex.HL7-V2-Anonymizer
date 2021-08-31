@@ -39,6 +39,7 @@ Say for instance, you want to replace the value that is currently assigned for t
 ```
 
 Ideally, the value corresponds to its semantic - so if you want a date to be replaced, give it a random date like `01.01.2020` as opposed to entering a random value.
+You may also want to pay attention to any character limits for fields and values specified by the HL7 v2 version you are using. Depending on the HL7 v2 version, replacements could otherwise render the message invalid according to that version. For instance, in version 2.5 the `NK1.2.2` field only allows a maximum of 30 characters. 
 
 Use the "HASH" keyword to generate persistent, pseudonymized IDs. This function will always generate the same anonymized ID for a given ID in the HL7 v2 message. The hash function is one-way, so there is no way of reversing the pseudonymized ID back to its original ID.
 
