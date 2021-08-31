@@ -38,6 +38,8 @@ Say for instance, you want to replace the value that is currently assigned for t
     }
 ```
 
+Ideally, the value corresponds to its semantic - so if you want a date to be replaced, give it a random date like `01.01.2020` as opposed to entering a random value.
+
 Use the "HASH" keyword to generate persistent, pseudonymized IDs. This function will always generate the same anonymized ID for a given ID in the HL7 v2 message. The hash function is one-way, so there is no way of reversing the pseudonymized ID back to its original ID.
 
 ```json
