@@ -7,13 +7,17 @@
         public class SegmentReplacement {
 
             public string Segment { get; set; }
+
             public Replacement[] Replacements { get; set; }
 
         }
 
         public class Replacement {
+
             public string Path { get; set; }
+
             public string Value { get; set; }
+
         }
     }
 }
