@@ -19,7 +19,7 @@ namespace Healex.HL7v2Anonymizer {
                                  error => -1);
             }
             catch (Exception ex) {
-                Console.WriteLine($"Error while processing commad.\nMessage:{ex.Message} \nStack{ex.StackTrace}");
+                Console.WriteLine($"Error while processing command.\nMessage:{ex.Message} \nStack{ex.StackTrace}");
             }
         }
 

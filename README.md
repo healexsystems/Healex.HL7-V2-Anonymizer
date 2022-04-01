@@ -14,7 +14,12 @@ The project was built to enable anyone to share HL7v2 sample messages without id
 
 1. Download the latest release to a location of your choice.
 2. Unzip it.
-3. Run the application and enter the path to your v2 messages. Make sure to back them up prior to runing the application since the original messages will be overwritten.
+3. Make sure to back them up prior to runing the application since the original messages will be overwritten.
+4. Run the application with `anonymizer -d PathToDirectory` or `anonymizer --directory PathToDirectory`
+   1. Do note, that `-d` is a required parameter.
+   2. The following other parameters are supported
+      1. `--help` displays a help screen that shows all supported command line arguments
+      2. `--version` Displays version information
 
 ## Configuration
 
@@ -75,4 +80,4 @@ Adding additional segments works in a similar manner. Simply add a new segment t
     }
 ```
 
-Save and restart application for the changes to take effect.
+Run the application again for the changes to take effect.
