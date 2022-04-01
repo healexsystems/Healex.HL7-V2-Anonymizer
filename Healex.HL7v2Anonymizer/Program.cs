@@ -33,6 +33,7 @@ namespace Healex.HL7v2Anonymizer {
             var files = Directory.GetFiles(directory, "*.hl7");
             if (files.Length == 0) {
                 Console.WriteLine($"=> No v2 messages found in {directory}");
+                return;
             }
             var anonymizer = new Anonymizer(GetReplacementOptions());
             foreach (var path in files) {
@@ -49,7 +50,6 @@ namespace Healex.HL7v2Anonymizer {
             var serializedMessage = message.SerializeMessage(true);
             File.WriteAllText(path, serializedMessage);
         }
-
 
         private static Message ReadAndParseMessage(string path) {
             var message = new Message(File.ReadAllText(path));

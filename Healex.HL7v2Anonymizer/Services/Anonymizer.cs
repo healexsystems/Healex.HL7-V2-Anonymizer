@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using static Healex.HL7v2Anonymizer.ReplacementOptions;
+using System.Collections.Generic;
 
 namespace Healex.HL7v2Anonymizer.Services {
 
@@ -29,7 +30,7 @@ namespace Healex.HL7v2Anonymizer.Services {
                 var substitution = options.Segments.FirstOrDefault(s => s.Segment == segment.Name);
                 if (substitution != null) {
                     foreach (var replacement in substitution.Replacements) {
-                        var value = Replace(replacement, message);
+                        var value = Replacement(replacement, message);
                         TryReplaceValue(message, replacement.Path, value);
                     }
                 }
@@ -37,27 +38,13 @@ namespace Healex.HL7v2Anonymizer.Services {
         }
 
 
-        private string Replace(Replacement replacement, Message message) {
-            if (replacement.Value == "HASH") {
-                try {
-                    var value = message.GetValue(replacement.Path);
-                    var hash = HashGenerator.HashString(value);
-                    return hash;
-                }
-                catch { }
-            }
-            return replacement.Value;
-        }
-
-
-
         #endregion
 
         #region Auxiliar Methods
 
-        private static bool TryReplaceValue(Message message, string path, string replacementValue) {
+        private static bool TryReplaceValue(Message message, string path, string value) {
             try {
-                message.SetValue(path, replacementValue);
+                message.SetValue(path, value);
             }
             catch (HL7Exception) {
                 // Throws if segment is not present
@@ -67,6 +54,18 @@ namespace Healex.HL7v2Anonymizer.Services {
                 return false;
             }
             return true;
+        }
+
+        private static string Replacement(Replacement replacement, Message message) {
+            if (replacement.Value == "HASH") {
+                try {
+                    var value = message.GetValue(replacement.Path);
+                    var hash = HashGenerator.HashString(value);
+                    return hash;
+                }
+                catch { }
+            }
+            return replacement.Value;
         }
 
         #endregion
