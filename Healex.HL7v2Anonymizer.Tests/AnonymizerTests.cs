@@ -12,6 +12,8 @@ namespace Healex.HL7v2Anonymizer.Tests {
     [TestClass]
     public class AnonymizerTests {
 
+        #region Test Methods
+
         [TestMethod]
         [DeploymentItem("Healex.HL7v2Anonymizer.Tests/TestData", "TestData")]
         public void AnonymizerTestAdt() {
@@ -49,8 +51,11 @@ namespace Healex.HL7v2Anonymizer.Tests {
             }
         }
 
-        [TestMethod]
-        public void TestAnonymization(string messageContent) {
+        #endregion
+
+        #region Auxiliar Methods
+
+        private void TestAnonymization(string messageContent) {
             var originalMessage = new Message(messageContent);
             var message = new Message(messageContent);
 
@@ -69,7 +74,7 @@ namespace Healex.HL7v2Anonymizer.Tests {
                     try {
                         var originalValue = originalMessage.GetValue(replacement.Path);
                         var newValue = message.GetValue(replacement.Path);
-                        
+
                         Assert.AreNotEqual(originalValue, newValue);
                         Assert.IsTrue(newValue == replacement.Value || newValue == HashGenerator.HashString(originalValue));
                     }
@@ -96,5 +101,8 @@ namespace Healex.HL7v2Anonymizer.Tests {
             var replacementOptions = config.GetSection("ReplacementOptions").Get<ReplacementOptions>();
             return replacementOptions;
         }
+
+        #endregion
+
     }
 }
