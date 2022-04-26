@@ -2,7 +2,7 @@
 
 namespace Healex.HL7v2Anonymizer.Options {
 
-    [Verb("process", HelpText = "Reads directory name and process all the HL7 files")]
+    [Verb("process", HelpText = "Reads directory name and processes all the HL7 files")]
     public class Process {
 
 
