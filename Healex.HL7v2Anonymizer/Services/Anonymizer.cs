@@ -2,88 +2,73 @@
 using System;
 using System.Linq;
 using static Healex.HL7v2Anonymizer.ReplacementOptions;
+using System.Collections.Generic;
 
-namespace Healex.HL7v2Anonymizer.Services
-{
-    public class Anonymizer
-    {
-        private readonly ReplacementOptions _replacementOptions;
+namespace Healex.HL7v2Anonymizer.Services {
 
-        public Anonymizer(ReplacementOptions replacementOptions)
-        {
-            _replacementOptions = replacementOptions;
+    public class Anonymizer {
+
+        #region Private Members
+
+        private readonly ReplacementOptions options;
+
+        #endregion
+
+        #region Constructors
+
+        public Anonymizer(ReplacementOptions options) {
+            this.options = options;
         }
 
-        public bool Anonymize(Message message)
-        {
-            var isSuccess = true;
+        #endregion
 
-            for (var segmentIndex = 0; segmentIndex < message.SegmentCount; segmentIndex++)
-            {
-                var segment = message.Segments().ElementAt(segmentIndex);
-                if (_replacementOptions.Segments.FirstOrDefault(segRep => segRep.Segment == segment.Name)
-                    is { } segmentReplacement)
-                {
-                    // Create new temporary message for each repeating segment 
-                    // because we can't set values in all repeating segments at once
-                    var tempMessage = AddSegmentAtIndex(segment, segmentIndex);
-                    foreach (Replacement replacement in segmentReplacement.Replacements)
-                    {
-                        var replacementValue = GetReplacementValue(replacement, message);
-                        isSuccess = TryReplaceValue(tempMessage, replacement.Path, replacementValue);
+        #region Public API
+
+        public void Anonymize(Message message) {
+            for (var index = 0; index < message.SegmentCount; index++) {
+                var segment = message.Segments()[index]; 
+                var substitution = options.Segments.FirstOrDefault(s => s.Segment == segment.Name);
+                if (substitution != null) {
+                    foreach (var replacement in substitution.Replacements) {
+                        var value = Replacement(replacement, message);
+                        TryReplaceValue(message, replacement.Path, value);
                     }
                 }
             }
-
-            return isSuccess;
         }
 
-        private Message AddSegmentAtIndex(Segment segment, int segmentIndex)
-        {
-            var tempMessage = new Message();
 
-            // workaround to ensure the segment gets it absolute (internal) SequenceNo re-assigned in AddNewSegment()
-            for (var i = 0; i < segmentIndex; i++)
-            {
-                tempMessage.AddNewSegment(new Segment("DummySegment", new HL7Encoding()));
-            }
-            tempMessage.AddNewSegment(segment);
-            return tempMessage;
-        }
+        #endregion
 
-        private string GetReplacementValue(Replacement replacement, Message message)
-        {
-            if (replacement.Value == "HASH")
-            {
-                try
-                {
-                    var valueToHash = message.GetValue(replacement.Path);
-                    var hashedValue = HashGenerator.HashString(valueToHash);
-                    return hashedValue;
-                } catch
-                {
-                    // Could not find a value to hash in the HL7 message
-                }
-            }
-            return replacement.Value;
-        }
+        #region Auxiliar Methods
 
-        private bool TryReplaceValue(Message message, string path, string replacementValue)
-        {
-            try
-            {
-                message.SetValue(path, replacementValue);
+        private static bool TryReplaceValue(Message message, string path, string value) {
+            try {
+                message.SetValue(path, value);
             }
-            catch (HL7Exception)
-            {
+            catch (HL7Exception) {
                 // Throws if segment is not present
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 Console.WriteLine(e.Message);
                 return false;
             }
             return true;
         }
+
+        private static string Replacement(Replacement replacement, Message message) {
+            if (replacement.Value == "HASH") {
+                try {
+                    var value = message.GetValue(replacement.Path);
+                    var hash = HashGenerator.HashString(value);
+                    return hash;
+                }
+                catch { }
+            }
+            return replacement.Value;
+        }
+
+        #endregion
+
     }
 }
