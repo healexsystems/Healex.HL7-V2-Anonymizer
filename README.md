@@ -10,11 +10,27 @@ The project was built to enable anyone to share HL7v2 sample messages without id
 
 ## How to use?
 
-**Warning: This application overwrites the original message so make sure you are working on a copy.**
 
 1. Download the latest release to a location of your choice.
 2. Unzip it.
-3. Run the application and enter the path to your v2 messages. Make sure to back them up prior to runing the application since the original messages will be overwritten.
+3. Run the application with at least the `-d` or `--directory` option set <br>
+For example on windows run:
+`Healex.HL7v2Anonymizer.exe -d C:\Path\To\Files` <br>
+On Linux that would be `./Healex.Hl7v2Anonymizer -d /path/to/files`
+
+**Warning: This will overwrite the original message if no separate output directory is specified.**
+
+## Command line arguments
+The following arguments or options are supported
+
+| Short | Long | Required | Description                                                                                                                                               |                                                                                                                              
+| --- | --- | --- |-----------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| -d | --directory | required | The path to the directory containing the files to be anonymized                                                                                           |
+| -o | --output | optional | The path to the directory where anonymized files should be written <br> If not set, files are overwritten in the directory specified with -d              |
+| -a | --append | optional | Defines a suffix that is to be appended to the filenames.<br>For example if "_Anonymized is set, all files will be written to {filename}_Anonymized.hl7." |
+| -h | --help | optional | displays the help message                                                                                                                                 | 
+
+
 
 ## Configuration
 
