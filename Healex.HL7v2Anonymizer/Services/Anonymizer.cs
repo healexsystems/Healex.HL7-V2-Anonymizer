@@ -31,30 +31,10 @@ namespace Healex.HL7v2Anonymizer.Services {
                 var substitution = options.Segments.FirstOrDefault(s => s.Segment == segment.Name);
                 if (substitution == null) continue;
 
-                var rules = new List<Replacement>();
-                rules.AddRange(substitution.Replacements);
+                var rules = ExpandReplacementRules(segment, substitution.Replacements);
                 
-                foreach (var replacement in substitution.Replacements)
-                {
-                    var indices = GetIndices(replacement.Path);
-                    var fieldIndex = indices[0];
-                    if (segment.Fields(fieldIndex) == null || !segment.Fields(fieldIndex).HasRepetitions) continue;
-                    
-                    for (var i=1; i < segment.Fields(fieldIndex).Repetitions().Count; i++)
-                    {
-                        var newPath = $"{segment.Name}.{fieldIndex}({i+1})";
-                        foreach (var j in indices.Skip(1))
-                        {
-                            newPath += $".{j}";
-                        }
-                        rules.Add(new Replacement{Path=newPath, Value=replacement.Value});
-                    }
-
-                }
-
                 foreach (var replacement in rules)
                 {
-                    Console.WriteLine($"{replacement.Path}, {replacement.Value}");
                     var value = Replacement(replacement, message);
                     TryReplaceValue(message, replacement.Path, value);
                 }
@@ -66,6 +46,30 @@ namespace Healex.HL7v2Anonymizer.Services {
 
         #region Auxiliar Methods
 
+        public List<Replacement> ExpandReplacementRules(Segment segment, Replacement[] originalRules)
+        {
+            var rules = new List<Replacement>();
+            rules.AddRange(originalRules);
+                
+            foreach (var replacement in originalRules)
+            {
+                var indices = GetIndices(replacement.Path);
+                var fieldIndex = indices[0];
+                if (segment.Fields(fieldIndex) == null || !segment.Fields(fieldIndex).HasRepetitions) continue;
+                    
+                for (var i=1; i < segment.Fields(fieldIndex).Repetitions().Count; i++)
+                {
+                    var newPath = $"{segment.Name}.{fieldIndex}({i+1})";
+                    foreach (var j in indices.Skip(1))
+                    {
+                        newPath += $".{j}";
+                    }
+                    rules.Add(new Replacement{Path=newPath, Value=replacement.Value});
+                }
+            }
+            return rules;
+        }
+        
         private static List<int> GetIndices(string path)
         {
             var retVal = new List<int>();
