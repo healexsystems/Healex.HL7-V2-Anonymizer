@@ -31,7 +31,7 @@ namespace Healex.HL7v2Anonymizer.Services {
                 var substitution = options.Segments.FirstOrDefault(s => s.Segment == segment.Name);
                 if (substitution == null) continue;
 
-                var rules = ExpandReplacementRules(segment, substitution.Replacements);
+                var rules = ExpandReplacementRulesForRepeatedFields(segment, substitution.Replacements);
                 
                 foreach (var replacement in rules)
                 {
@@ -46,7 +46,7 @@ namespace Healex.HL7v2Anonymizer.Services {
 
         #region Auxiliar Methods
 
-        public List<Replacement> ExpandReplacementRules(Segment segment, Replacement[] originalRules)
+        private static List<Replacement> ExpandReplacementRulesForRepeatedFields(Segment segment, Replacement[] originalRules)
         {
             var rules = new List<Replacement>();
             rules.AddRange(originalRules);
