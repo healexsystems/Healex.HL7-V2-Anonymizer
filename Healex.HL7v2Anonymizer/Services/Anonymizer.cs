@@ -24,15 +24,19 @@ namespace Healex.HL7v2Anonymizer.Services {
 
         #region Public API
 
-        public void Anonymize(Message message) {
+        public void Anonymize(Message message)
+        {
             for (var index = 0; index < message.SegmentCount; index++) {
                 var segment = message.Segments()[index]; 
                 var substitution = options.Segments.FirstOrDefault(s => s.Segment == segment.Name);
-                if (substitution != null) {
-                    foreach (var replacement in substitution.Replacements) {
-                        var value = Replacement(replacement, message);
-                        TryReplaceValue(message, replacement.Path, value);
-                    }
+                if (substitution == null) continue;
+
+                var rules = ExpandReplacementRulesForRepeatedFields(segment, substitution.Replacements);
+                
+                foreach (var replacement in rules)
+                {
+                    var value = Replacement(replacement, message);
+                    TryReplaceValue(message, replacement.Path, value);
                 }
             }
         }
@@ -42,9 +46,45 @@ namespace Healex.HL7v2Anonymizer.Services {
 
         #region Auxiliar Methods
 
+        private static List<Replacement> ExpandReplacementRulesForRepeatedFields(Segment segment, Replacement[] originalRules)
+        {
+            var rules = new List<Replacement>();
+            rules.AddRange(originalRules);
+                
+            foreach (var replacement in originalRules)
+            {
+                var indices = GetIndices(replacement.Path);
+                var fieldIndex = indices[0];
+                if (segment.Fields(fieldIndex) == null || !segment.Fields(fieldIndex).HasRepetitions) continue;
+                    
+                for (var i=1; i < segment.Fields(fieldIndex).Repetitions().Count; i++)
+                {
+                    var newPath = $"{segment.Name}.{fieldIndex}({i+1})";
+                    foreach (var j in indices.Skip(1))
+                    {
+                        newPath += $".{j}";
+                    }
+                    rules.Add(new Replacement{Path=newPath, Value=replacement.Value});
+                }
+            }
+            return rules;
+        }
+        
+        private static List<int> GetIndices(string path)
+        {
+            var retVal = new List<int>();
+            var parts = path.Split(".");
+            for (var i = 1; i < parts.Length; i++)
+            {
+                retVal.Add(int.Parse(parts[i]));
+            }
+            return retVal;
+        }
+        
         private static bool TryReplaceValue(Message message, string path, string value) {
             try {
-                message.SetValue(path, value);
+                if(!string.IsNullOrEmpty(message.GetValue(path)))
+                    message.SetValue(path, value);
             }
             catch (HL7Exception) {
                 // Throws if segment is not present

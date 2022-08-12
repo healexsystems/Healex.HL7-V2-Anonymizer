@@ -10,7 +10,6 @@ The project was built to enable anyone to share HL7v2 sample messages without id
 
 ## How to use?
 
-
 1. Download the latest release to a location of your choice.
 2. Unzip it.
 3. Run the application with at least the `-d` or `--directory` option set <br>
@@ -31,10 +30,9 @@ The following arguments or options are supported
 | -h | --help | optional | displays the help message                                                                                                                                 | 
 
 
-
 ## Configuration
 
-This application will use the `appsettings.json` to read the values that are to be replaced for each segments and their corresponding subsegments. 
+This application will use the `appsettings.json` to read the values that are to be replaced for each segments and their corresponding subsegments. If a value is to be replaced in a repeating field, the same rules are applied to all components of each repetition.
 
 A segment is recognized by its `"Segment"` property. Each segment contains an array of replacements. A segment's subsegment can be identified by its `"Path"` property inside the replacements array. Subsegments will also have a value property that contains the value by which a value inside a HL7v2 message is to be replaced.
 
