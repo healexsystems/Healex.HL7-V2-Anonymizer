@@ -19,7 +19,7 @@ namespace Healex.HL7v2Anonymizer.Tests
         [TestMethod]
         public void Anonymize_NoRepetitionPid5_PatientNameNotInMessage()
         {
-            var testMessage = CreateDefaultTestMessage(0);
+            var testMessage = CreateDefaultTestMessage();
             var testReplacements = CreateDefaultReplacementOptions();
             
             var anonymizer = new Anonymizer(testReplacements);
@@ -44,13 +44,7 @@ namespace Healex.HL7v2Anonymizer.Tests
         [TestMethod]
         public void AnonymizerTestAdt()
         {
-            TestAnonymization(CreateDefaultTestMessage(0));
-        }
-
-        [TestMethod]
-        public void AnonymizerTestOru()
-        {
-            TestAnonymization(CreateDefaultTestMessage(0));
+            TestAnonymization(CreateDefaultTestMessage());
         }
 
         [TestMethod]
@@ -58,8 +52,8 @@ namespace Healex.HL7v2Anonymizer.Tests
         {
             // Setup
 
-            var originalMessage = CreateDefaultTestMessage(0);
-            var message = CreateDefaultTestMessage(0);
+            var originalMessage = CreateDefaultTestMessage();
+            var message = CreateDefaultTestMessage();
 
             message.ParseMessage();
             originalMessage.ParseMessage();
@@ -126,7 +120,7 @@ namespace Healex.HL7v2Anonymizer.Tests
 
         #region TestData
         
-        private static Message CreateDefaultTestMessage(int repetitionsPid5)
+        private static Message CreateDefaultTestMessage(int repetitionsPid5 = 0)
         {
             var pid5 = "Mustermann^Maximilian^^^^^L^A";
             for (var i = 0; i < repetitionsPid5; i++)
