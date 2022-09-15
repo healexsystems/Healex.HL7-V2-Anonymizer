@@ -1,3 +1,4 @@
+using System;
 using Healex.HL7v2Anonymizer.Services;
 using HL7.Dotnetcore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,6 +16,17 @@ namespace Healex.HL7v2Anonymizer.Tests
         #endregion
         
         #region Test Methods
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Anonymize_MultipleConfigsForSameSegment_Exception()
+        {
+            var testMessage = CreateDefaultTestMessage();
+            var testReplacements = CreateFaultyReplacementOptions();
+            var anonymizer = new Anonymizer(testReplacements);
+            anonymizer.Anonymize(testMessage);
+        }
+        
 
         [TestMethod]
         public void Anonymize_RepeatingSegment_AllSegmentsAnonymized()
@@ -344,6 +356,40 @@ namespace Healex.HL7v2Anonymizer.Tests
             };
             
             return replacementOptions;
+        }
+
+        private ReplacementOptions CreateFaultyReplacementOptions()
+        {
+            return new ReplacementOptions
+            {
+                Segments = new SegmentReplacement[]
+                {
+                    new SegmentReplacement()
+                    {
+                        Segment = "PID",
+                        Replacements = new[]
+                        {
+                            new Replacement
+                            {
+                                Path = "PID.5",
+                                Value = "Irrelevant"
+                            }
+                        }
+                    },
+                    new SegmentReplacement()
+                    {
+                        Segment = "PID",
+                        Replacements = new[]
+                        {
+                            new Replacement
+                            {
+                                Path = "PID.5",
+                                Value = "Irrelevant"
+                            }
+                        }
+                    }
+                }
+            };
         }
         #endregion
     }
