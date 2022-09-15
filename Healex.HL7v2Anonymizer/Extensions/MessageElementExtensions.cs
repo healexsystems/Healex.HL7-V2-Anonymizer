@@ -89,19 +89,13 @@ public static class MessageElementExtensions
             rep.Value = value;
         }
     }
-
-    public static void SetValue(this Component component, string value)
+    
+    public static void SetValue(this MessageElement element, string value)
     {
-        if (component == null) return;
-        component.Value = GetReplacement(component.Value, value);
+        if (element == null) return;
+        element.Value = GetReplacement(element.Value, value);
     }
-
-    public static void SetValue(this SubComponent subComponent, string value)
-    {
-        if (subComponent == null) return;
-        subComponent.Value = GetReplacement(subComponent.Value, value);
-    }
-
+    
     public static string GetReplacement(string originalValue, string replacementValue)
     {
         if (string.IsNullOrEmpty(originalValue)) return "";
