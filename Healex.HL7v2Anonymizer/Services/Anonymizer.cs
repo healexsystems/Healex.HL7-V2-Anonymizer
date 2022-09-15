@@ -1,13 +1,12 @@
 ﻿using HL7.Dotnetcore;
 using System;
 using System.Linq;
-using static Healex.HL7v2Anonymizer.ReplacementOptions;
-using System.Collections.Generic;
+using Healex.HL7v2Anonymizer.Extensions;
 
-namespace Healex.HL7v2Anonymizer.Services {
-
-    public class Anonymizer {
-
+namespace Healex.HL7v2Anonymizer.Services
+{
+    public class Anonymizer
+    {
         #region Private Members
 
         private readonly ReplacementOptions options;
@@ -16,7 +15,8 @@ namespace Healex.HL7v2Anonymizer.Services {
 
         #region Constructors
 
-        public Anonymizer(ReplacementOptions options) {
+        public Anonymizer(ReplacementOptions options)
+        {
             this.options = options;
         }
 
@@ -26,89 +26,20 @@ namespace Healex.HL7v2Anonymizer.Services {
 
         public void Anonymize(Message message)
         {
-            for (var index = 0; index < message.SegmentCount; index++) {
-                var segment = message.Segments()[index]; 
-                var substitution = options.Segments.FirstOrDefault(s => s.Segment == segment.Name);
-                if (substitution == null) continue;
-
-                var rules = ExpandReplacementRulesForRepeatedFields(segment, substitution.Replacements);
-                
-                foreach (var replacement in rules)
-                {
-                    var value = Replacement(replacement, message);
-                    TryReplaceValue(message, replacement.Path, value);
-                }
-            }
-        }
-
-
-        #endregion
-
-        #region Auxiliar Methods
-
-        private static List<Replacement> ExpandReplacementRulesForRepeatedFields(Segment segment, Replacement[] originalRules)
-        {
-            var rules = new List<Replacement>();
-            rules.AddRange(originalRules);
-                
-            foreach (var replacement in originalRules)
+            foreach (var segment in message.Segments())
             {
-                var indices = GetIndices(replacement.Path);
-                var fieldIndex = indices[0];
-                if (segment.Fields(fieldIndex) == null || !segment.Fields(fieldIndex).HasRepetitions) continue;
-                    
-                for (var i=1; i < segment.Fields(fieldIndex).Repetitions().Count; i++)
+                var rules = options.Segments.Where(replacement => replacement.Segment == segment.Name)
+                    .Select(replacement => replacement.Replacements);
+                foreach (var rule in rules)
                 {
-                    var newPath = $"{segment.Name}.{fieldIndex}({i+1})";
-                    foreach (var j in indices.Skip(1))
+                    foreach (var replacement in rule)
                     {
-                        newPath += $".{j}";
+                        segment.TrySetValue(replacement.Path, replacement.Value);
                     }
-                    rules.Add(new Replacement{Path=newPath, Value=replacement.Value});
                 }
             }
-            return rules;
-        }
-        
-        private static List<int> GetIndices(string path)
-        {
-            var retVal = new List<int>();
-            var parts = path.Split(".");
-            for (var i = 1; i < parts.Length; i++)
-            {
-                retVal.Add(int.Parse(parts[i]));
-            }
-            return retVal;
-        }
-        
-        private static bool TryReplaceValue(Message message, string path, string value) {
-            try {
-                if(!string.IsNullOrEmpty(message.GetValue(path)))
-                    message.SetValue(path, value);
-            }
-            catch (HL7Exception) {
-                // Throws if segment is not present
-            }
-            catch (Exception e) {
-                Console.WriteLine(e.Message);
-                return false;
-            }
-            return true;
-        }
-
-        private static string Replacement(Replacement replacement, Message message) {
-            if (replacement.Value == "HASH") {
-                try {
-                    var value = message.GetValue(replacement.Path);
-                    var hash = HashGenerator.HashString(value);
-                    return hash;
-                }
-                catch { }
-            }
-            return replacement.Value;
         }
 
         #endregion
-
     }
 }
