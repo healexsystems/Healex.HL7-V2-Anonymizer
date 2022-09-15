@@ -1,5 +1,4 @@
 ﻿using HL7.Dotnetcore;
-using System;
 using System.Linq;
 using Healex.HL7v2Anonymizer.Extensions;
 
@@ -39,7 +38,6 @@ namespace Healex.HL7v2Anonymizer.Services
                 }
             }
         }
-
         #endregion
     }
 }
