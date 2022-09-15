@@ -1,3 +1,4 @@
+using System;
 using Healex.HL7v2Anonymizer.Services;
 using HL7.Dotnetcore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,6 +17,33 @@ namespace Healex.HL7v2Anonymizer.Tests
         
         #region Test Methods
 
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Anonymize_MultipleConfigsForSameSegment_Exception()
+        {
+            var testMessage = CreateDefaultTestMessage();
+            var testReplacements = CreateFaultyReplacementOptions();
+            var anonymizer = new Anonymizer(testReplacements);
+            anonymizer.Anonymize(testMessage);
+        }
+        
+
+        [TestMethod]
+        public void Anonymize_RepeatingSegment_AllSegmentsAnonymized()
+        {
+            var testMessage = CreateDefaultTestMessage();
+            var testReplacements = CreateDefaultReplacementOptions();
+
+            var anonymizer = new Anonymizer(testReplacements);
+            anonymizer.Anonymize(testMessage);
+            var IN1s = testMessage.Segments("IN1");
+            IN1s.Count.Should().Be(2);
+            IN1s[0].Fields(2).Components(1).Value.Should().Be("InsuranceShort");
+            IN1s[1].Fields(2).Components(1).Value.Should().Be("");
+            IN1s[0].Fields(2).Components(2).Value.Should().Be("InsuranceLong");
+            IN1s[1].Fields(2).Components(2).Value.Should().Be("InsuranceLong");
+        }
+        
         [TestMethod]
         public void Anonymize_NoRepetitionPid5_PatientNameNotInMessage()
         {
@@ -132,11 +160,12 @@ namespace Healex.HL7v2Anonymizer.Tests
                 "MSH|^~\\&|iMedOne^BTS|Ein1^123456789|Cloverleaf|Cloverleaf|20220101000000||ADT^A01|12345678|P|2.4|||AL|NE\n" +
                 "EVN|A01|20220101000000|||NeoGeo|20220101000000|Ein1\n" +
                 $"PID|1||101010^^^Ein1^PI||{pid5}||19990101|M|||Musterstraße 1^^Musterstadt^^4830^D^H~^^^^^^O||0180-12345^PRN^PH^^^^018012345~^PRN^FX^~^PRN^CP^~^NET^X.400^|^WPN^PH|Deutsch|verheiratet|KA||||||Malchin|N||D|Arbeiter|||N|||20220101000000\n" +
-                "NK1|1|Mustermann ^Maxima|Ehefrau|Musterstraße 1^^Musterstadt^^4830^D|0180-12345^NO|||20200101|||||||||||||||||||||||||1010\n" +
+                "NK1|1|Mustermann^Maxima|Ehefrau|Musterstraße 1^^Musterstadt^^4830^D|0180-12345^NO|||20200101|||||||||||||||||||||||||1010\n" +
                 "NK1|2|Mustermann^Maxima|Ehefrau|Musterstraße 1^^Musterstadt^^4830^D|0180-12345^NO|||20200101|||||||||||||||||||||||||101010\n" +
                 "PV1|1|I|A4^^^RMED^^N|Notfall||^^^^^N|||123456789^Mustertyp^Maximus^^^Dr. med.^^LANR^^^^^^123456789|R-N||J||||0|||1234567^^^Ein1^VN|Standard||||K||||20220101000000||||||||0101||||||||20220101000000|\n" +
                 "PV2|||0101|||||||||Notfall||||||||||||||||||||||||N\n" +
-                "IN1|1|VKK^VdAK|123456789^^^DAK^NII~K101^^^DAK^NIIP|DAK|Postfach^^Musterburg^^2000^DE|~|||primaer|||19980202|||R^1|^||19980202|Musterallee^^^^2000^D||||||||||20220101|||||||D123456789|||||||M||||||D123456789\n";
+                "IN1|1|VKK^VdAK|123456789^^^DAK^NII~K101^^^DAK^NIIP|DAK|Postfach^^Musterburg^^2000^DE|~|||primaer|||19980202|||R^1|^||19980202|Musterallee^^^^2000^D||||||||||20220101|||||||D123456789|||||||M||||||D123456789\n"+
+                "IN1|2|^Mimimimi|123456789^^^DAK^NII~K101^^^DAK^NIIP|DAK|Postfach^^Musterburg^^2000^DE|~|||primaer|||19980202|||R^1|^||19980202|Musterallee^^^^2000^D||||||||||20220101|||||||D123456789|||||||M||||||D123456789\n";
 
             var message = new Message(messageString);
             message.ParseMessage();
@@ -244,6 +273,8 @@ namespace Healex.HL7v2Anonymizer.Tests
                         Segment = "IN1",
                         Replacements = new[]
                         {
+                            new Replacement { Path = "IN1.2.1", Value = "InsuranceShort" },
+                            new Replacement { Path = "IN1.2.2", Value = "InsuranceLong" },
                             new Replacement { Path = "IN1.6.1", Value = "Family Name" },
                             new Replacement { Path = "IN1.6.2", Value = "Given Name" },
                             new Replacement { Path = "IN1.6.3", Value = "Second name" },
@@ -325,6 +356,40 @@ namespace Healex.HL7v2Anonymizer.Tests
             };
             
             return replacementOptions;
+        }
+
+        private ReplacementOptions CreateFaultyReplacementOptions()
+        {
+            return new ReplacementOptions
+            {
+                Segments = new SegmentReplacement[]
+                {
+                    new SegmentReplacement()
+                    {
+                        Segment = "PID",
+                        Replacements = new[]
+                        {
+                            new Replacement
+                            {
+                                Path = "PID.5",
+                                Value = "Irrelevant"
+                            }
+                        }
+                    },
+                    new SegmentReplacement()
+                    {
+                        Segment = "PID",
+                        Replacements = new[]
+                        {
+                            new Replacement
+                            {
+                                Path = "PID.5",
+                                Value = "Irrelevant"
+                            }
+                        }
+                    }
+                }
+            };
         }
         #endregion
     }
