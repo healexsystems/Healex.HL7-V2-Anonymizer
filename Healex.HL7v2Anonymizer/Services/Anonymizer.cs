@@ -1,4 +1,5 @@
-﻿using HL7.Dotnetcore;
+﻿using System;
+using HL7.Dotnetcore;
 using System.Linq;
 using Healex.HL7v2Anonymizer.Extensions;
 
@@ -27,14 +28,17 @@ namespace Healex.HL7v2Anonymizer.Services
         {
             foreach (var segment in message.Segments())
             {
-                var rules = options.Segments.Where(replacement => replacement.Segment == segment.Name)
-                    .Select(replacement => replacement.Replacements);
-                foreach (var rule in rules)
+                var rules = options.Segments.Where(replacement => replacement.Segment == segment.Name).ToList();
+                if (rules.Count > 1)
                 {
-                    foreach (var replacement in rule)
-                    {
-                        segment.TrySetValue(replacement.Path, replacement.Value);
-                    }
+                    throw new ArgumentException(
+                        $"Found multiple replacement configurations for segment {segment.Name}");
+                }
+                var rule = rules.FirstOrDefault();
+                if (rule == null) continue;
+                foreach (var replacement in rule.Replacements)
+                {
+                    segment.TrySetValue(replacement.Path, replacement.Value);
                 }
             }
         }
